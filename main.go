@@ -5,6 +5,7 @@ import (
 	"image"
 	"image/color"
 	"image/png"
+	"math"
 	"os"
 
 	"github.com/TateKennington/tunnel-tracer/geometry"
@@ -27,6 +28,12 @@ func main() {
 	vertical := geometry.Vec3{0, -viewport_height, 0}
 	viewport_origin := geometry.Vec3{-viewport_width / 2, viewport_height / 2, -focal_length}
 
+	world := geometry.Scene{}
+	world.Add(geometry.Sphere{
+		Origin: geometry.Vec3{0, 0, -1},
+		Radius: 0.5,
+	})
+
 	for y := 0; y < image_height; y++ {
 		for x := 0; x < image_width; x++ {
 			fmt.Printf("\rProgress %d/%.0f", y*image_width+x+1, image_width*image_height)
@@ -43,7 +50,7 @@ func main() {
 				Origin:    origin,
 				Direction: direction,
 			}
-			render_color := ray_color(r)
+			render_color := ray_color(r, world)
 			render.Set(x, y, render_color)
 		}
 	}
@@ -56,7 +63,10 @@ func main() {
 	png.Encode(output, render)
 }
 
-func ray_color(r geometry.Ray) color.Color {
+func ray_color(r geometry.Ray, scene geometry.Scene) color.Color {
+	if hit, result := scene.Hit(r, 0, math.MaxFloat64); hit {
+		return result.Normal.Translate(geometry.Vec3{1.0, 1.0, 1.0}).Scale(0.5)
+	}
 	unit_direction := r.Direction.Unit()
 	t := 0.5 * (unit_direction.Y + 1.0)
 	return geometry.Vec3{1.0, 1.0, 1.0}.Lerp(t, geometry.Vec3{0.5, 0.7, 1.0})

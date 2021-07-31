@@ -5,6 +5,6 @@ type Ray struct {
 	Direction Vec3
 }
 
-func (self *Ray) At(t float64) Vec3 {
-	return self.Origin.Translate(self.Direction.Scale(t))
+func (ray *Ray) At(t float64) Vec3 {
+	return ray.Origin.Translate(ray.Direction.Scale(t))
 }
